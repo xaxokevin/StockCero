@@ -1,0 +1,89 @@
+<?php
+
+/**
+ * Implementa hook_help().
+ *
+ * Muestra ayuda e información del modulo.
+ *
+ * @param path 
+ *  En que parte del sitio estamos usando la ayuda
+ * @param arg 
+ *   Array que contiene la ruta actual y como se devuelve
+ */
+function stock_cero_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#stock_cero":
+      return t("Ayuda del modulo cero stock");
+      break;
+  }
+}
+
+
+
+/**
+ * Implementa hook_block_info().
+ * 
+ */
+function agotados_module_block_info() {
+    $blocks['stock_cero'] = array(
+      // The name that will appear in the block list.
+      'info' => t('Cero stock'),
+      // Default setting.
+      'cache' => DRUPAL_CACHE_PER_ROLE,
+    );
+    return $blocks;
+  }
+
+
+
+
+
+  /**
+ * Contenido personalizado.
+ *
+ * Recupera un conjunto de productos agotados, en el caso del bloque o
+ * próximos a agotarse en el caso de la página.
+ *
+ * @param display
+ *   Cadena usada para filtrar el contenido entre el bloque y la página.
+ * @return
+ *   Un conjunto de productos que cumplan el criterio de estar agotados o próximos a agotarse.
+ */
+function stock_cero_contents($display) {
+    
+
+    switch ($display) {
+
+        case "block":
+          /**
+           * En el caso de ser un bloque solo se muestran
+           * los que estan agotados
+           */ 
+
+        $query = db_select('field_data_commerce_stock', 'n')
+        ->fields('n', array('entity_id', 'commerce_stock_value'))
+        ->condition('commerce_stock_value', 0);
+
+            break;
+        case "page":
+        /**
+         * En el caso de ser una pagina se van a mostrar segun el rango que le
+         * pongamos
+         */
+        $rango = variable_get('stock_cero_rango', 0);
+        /**
+         * se obtiene todos los productos que le pasemos la rango, es decir si establecemos
+         * que el rango maximo de stock es 3, nos va a mostrar todos los productos que tengan
+         * menos de 3 en el almcacen
+         */
+        $query = db_select('field_data_commerce_stock', 'n')
+          ->fields('n', array('entity_id', 'commerce_stock_value'))
+          ->condition('commerce_stock_value', array(0,$rango),'BETWEEN');
+
+
+            break;
+       
+    }
+  
+    return $query->execute();
+  }
