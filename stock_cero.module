@@ -26,9 +26,9 @@ function stock_cero_help($path, $arg) {
  */
 function agotados_module_block_info() {
     $blocks['stock_cero'] = array(
-      // The name that will appear in the block list.
+      // El nombre que aparece en la lista de bloques.
       'info' => t('Cero stock'),
-      // Default setting.
+      // Ajustes por defecto.
       'cache' => DRUPAL_CACHE_PER_ROLE,
     );
     return $blocks;
@@ -60,17 +60,22 @@ function stock_cero_contents($display) {
         ->condition('commerce_stock_value', 0);
 
             break;
+
         case "page":
+
         /**
          * En el caso de ser una pagina se van a mostrar segun el rango que le
          * pongamos
          */
+
         $rango = variable_get('stock_cero_rango', 0);
+
         /**
          * se obtiene todos los productos que le pasemos la rango, es decir si establecemos
          * que el rango maximo de stock es 3, nos va a mostrar todos los productos que tengan
          * menos de 3 en el almcacen
          */
+
         $query = db_select('field_data_commerce_stock', 'n')
           ->fields('n', array('entity_id', 'commerce_stock_value'))
           ->condition('commerce_stock_value', array(0,$rango),'BETWEEN');
@@ -93,9 +98,9 @@ function stock_cero_block_view($delta = '') {
   switch ($delta) {
     case 'stock_cero':
       $block['subject'] = t('Cero Stock');
-      if (user_access('access content')) {
+      if (user_access('access stock_cero content')) {
         // Se hace uso de nuestra funcion para recuperar los datos
-        $result = stock_cero_contents();
+        $result = stock_cero_contents('block');
         // Array que contiene los datos a renderizar
         $items = array();
         // Itera los resultados y los crea como links
@@ -134,7 +139,7 @@ function stock_cero_menu() {
     'description' => 'Configuración del modulo Cero Stock',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('stock_cero_form'),
-    'access arguments' => array('access administration pages'),
+    'access arguments' => array('access stock_cero content'),
     'type' => MENU_NORMAL_ITEM,
   );
 
@@ -170,7 +175,7 @@ function stock_cero_form($form, &$form_state) {
  *  Guarda el estado anterior durante el proceso de relleno del formulario.
  */
 function stock_cero_form_validate($form, &$form_state){
-  $max_num = $form_state['values']['current_posts_rango'];
+  $max_num = $form_state['values']['stock_cero_rango'];
   if (!is_numeric($max_num)){
     form_set_error('stock_cero_rango', t('Solo caracteres numericos entre 0 y 999'));
   }
@@ -186,7 +191,44 @@ function stock_cero_form_validate($form, &$form_state){
 function stock_cero_permission() {
   return array(
     'access stock_cero content' => array(
-      'title' => t('Access content for the Current posts module'),
+      'title' => t('Acceso al contenido del modulo Cero Stock'),
     )
   );
+}
+
+
+
+/**
+ * LLamada a la pagina Cero Stock
+ *
+ * @see stock_cero_menu()
+ * 
+ */
+function _stock_cero_page() {
+  //Comprobamos los permisos
+  if (user_access('access stock_cero content')) {
+    // Usamos nuestra funcion para obtener datos.
+    $result = stock_cero_contents('page');
+    //Array que contiene elementos de la pagina a renderizar.
+    $items = array();
+    // Iteramos los resultados y creamos los links
+    foreach ($result as $node) {
+      $product = commerce_product_load($node->entity_id);
+     //Creamos por cada elemento un enlace
+      $items[] = array(
+        l($product->title, '../../products/' . $node->entity_id . '/edit'  ),
+        $node->commerce_stock_value
+      );
+    }
+  }
+  
+  $output[] = array(
+    '#theme' => 'table',
+    '#header' => array(t('Enlace para editar'), t('Stock disponible')),
+    '#rows' => $items,
+    '#attributes' => array('class' => array('table-class')),
+    '#empty' =>t('No hay productos que coincidan con el criterio'),
+  );
+
+  return $output;
 }
