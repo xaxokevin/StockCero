@@ -106,7 +106,7 @@ function stock_cero_block_view($delta = '') {
         // Itera los resultados y los crea como links
         foreach ($result as $node) {
           $items[] = array(
-            'data' => l($node->bundle '../../products/' . $node->entity_id . '/edit'),
+            'data' => l($node->bundle, 'admin/commerce/products/' . $node->entity_id . '/edit'),
           ); 
         }
        // Se muestra si no hay contenido que mostrar
@@ -225,7 +225,7 @@ function _stock_cero_page() {
     foreach ($result as $node) {
      //Creamos por cada elemento un enlace
       $items[] = array(
-        l($node->title, '../../products/' . $node->entity_id . '/edit'  ),
+        l($node->title, 'admin/commerce/products/' . $node->entity_id . '/edit'  ),
         $node->commerce_stock_value
       );
     }
