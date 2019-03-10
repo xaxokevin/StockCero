@@ -38,16 +38,11 @@ function agotados_module_block_info() {
 
 
 
-  /**
- * Contenido personalizado.
- *
- * Recupera un conjunto de productos agotados, en el caso del bloque o
- * próximos a agotarse en el caso de la página.
- *
+/**
+ *Muestra el stock disponoble segun criterios
  * @param display
- *   Cadena usada para filtrar el contenido entre el bloque y la página.
- * @return
- *   Un conjunto de productos que cumplan el criterio de estar agotados o próximos a agotarse.
+ *  Variable que nos dice donde estamos visualizando el stock
+ *
  */
 function stock_cero_contents($display) {
     
@@ -87,3 +82,100 @@ function stock_cero_contents($display) {
   
     return $query->execute();
   }
+
+
+  /**
+ * Implements hook_block_view().
+ * 
+ * Prepara el contenido del bloque
+ */
+function stock_cero_block_view($delta = '') {
+  switch ($delta) {
+    case 'stock_cero':
+      $block['subject'] = t('Cero Stock');
+      if (user_access('access content')) {
+        // Se hace uso de nuestra funcion para recuperar los datos
+        $result = stock_cero_contents();
+        // Array que contiene los datos a renderizar
+        $items = array();
+        // Itera los resultados y los crea como links
+        foreach ($result as $node) {
+          $items[] = array(
+            'data' => l($node->title, '../../products/' . $node->entity_id . '/edit'),
+          ); 
+        }
+       // Se muestra si no hay contenido que mostrar
+        if (empty($items)) {
+          $block['content'] = t('No hay productos que mostrar.');  
+        } 
+        else {
+          // Se muestran los datos del bloque.
+          $block['content'] = theme('item_list', array(
+            'items' => $items));
+        }
+      }
+    return $block;
+  }
+  
+}
+
+
+/**
+ * Implementa hook_menu().
+ */
+function stock_cero_menu() {
+  $items = array();
+
+  /**
+   * Como se va a mostrar en el menu
+   */
+  $items['admin/config/content/stock_cero'] = array(
+    'title' => 'Cero Stock',
+    'description' => 'Configuración del modulo Cero Stock',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('stock_cero_form'),
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+/**
+ * Llamda de la pagina: Cero stock ajustes
+ *
+ * @see cero_stock_menu()
+ */
+function stock_cero_form($form, &$form_state) {
+  $form['stock_cero_rango'] = array(
+    '#type' => 'textfield',
+    '#title' => t('El numero maximo de stock'),
+    '#default_value' => variable_get('current_posts_max', 3),
+    '#size' => 3,
+    '#maxlength' => 3,
+    '#description' => t('El numero maximo de productos con "x" stock a mostrar'),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+
+/**
+ * Implements validation from the Form API.
+ * 
+ * @param $form
+ *   A structured array containing the elements and properties of the form.
+ * @param $form_state
+ *   An array that stores information about the form's current state 
+ *   during processing.
+ */
+function current_posts_form_validate($form, &$form_state){
+  $max_num = $form_state['values']['current_posts_rango'];
+  if (!is_numeric($max_num)){
+    form_set_error('current_posts_rango', t('Solo caracteres numericos entre 0 y 999'));
+  }
+  elseif ($max_num <= 0){
+    form_set_error('current_posts_rango', t('Solo carecteres numericos positivos'));
+  }
+}
