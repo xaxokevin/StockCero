@@ -24,7 +24,7 @@ function stock_cero_help($path, $arg) {
  * Implementa hook_block_info().
  * 
  */
-function agotados_module_block_info() {
+function stock_cero_block_info() {
     $blocks['stock_cero'] = array(
       // El nombre que aparece en la lista de bloques.
       'info' => t('Cero stock'),
@@ -49,7 +49,7 @@ function stock_cero_contents($display) {
 
     switch ($display) {
 
-        case "block":
+        case 'block':
           /**
            * En el caso de ser un bloque solo se muestran
            * los que estan agotados
@@ -61,7 +61,7 @@ function stock_cero_contents($display) {
 
             break;
 
-        case "page":
+        case 'page':
 
         /**
          * En el caso de ser una pagina se van a mostrar segun el rango que le
@@ -106,7 +106,7 @@ function stock_cero_block_view($delta = '') {
         // Itera los resultados y los crea como links
         foreach ($result as $node) {
           $items[] = array(
-            'data' => l($node->title, '../../products/' . $node->entity_id . '/edit'),
+            'data' => l($node->title, 'admin/commerce/products/' . $node->entity_id . '/edit'),
           ); 
         }
        // Se muestra si no hay contenido que mostrar
@@ -139,6 +139,16 @@ function stock_cero_menu() {
     'description' => 'Configuración del modulo Cero Stock',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('stock_cero_form'),
+    'access arguments' => array('access stock_cero content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+/**
+ * Enlace a la pagina
+ */
+  $items['stock_cero_page'] = array(
+    'title' => 'Cero Stock Page',
+    'page callback' => '_stock_cero_page',
     'access arguments' => array('access stock_cero content'),
     'type' => MENU_NORMAL_ITEM,
   );
@@ -222,11 +232,10 @@ function _stock_cero_page() {
     }
   }
   
-  $output[] = array(
-    '#theme' => 'table',
-    '#header' => array(t('Enlace para editar'), t('Stock disponible')),
-    '#rows' => $items,
-    '#attributes' => array('class' => array('table-class')),
+  $page_array[] = array(
+    '#title' => t('Ultimas unidades'),
+    '#items' => $items,
+    '#theme' => 'item_list',
     '#empty' =>t('No hay productos que coincidan con el criterio'),
   );
 
