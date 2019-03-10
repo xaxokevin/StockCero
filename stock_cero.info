@@ -3,4 +3,5 @@ description = Nos muestra que productos tenemos agotados en el almacen si es un 
 core = 7.x 
 package = Other
 version = 7.x-1.0-dev
-configure = admin/config/content/stock_cero
+dependencies[] = commerce
+configure = admin/commerce/stock_cero

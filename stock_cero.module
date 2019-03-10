@@ -106,7 +106,7 @@ function stock_cero_block_view($delta = '') {
         // Itera los resultados y los crea como links
         foreach ($result as $node) {
           $items[] = array(
-            'data' => l($node->bundle, 'admin/commerce/products/' . $node->entity_id . '/edit'),
+            'data' => l($node->entity_id, 'admin/commerce/products/' . $node->entity_id . '/edit'),
           ); 
         }
        // Se muestra si no hay contenido que mostrar
@@ -134,7 +134,7 @@ function stock_cero_menu() {
   /**
    * Como se va a mostrar en el menu
    */
-  $items['admin/config/content/stock_cero'] = array(
+  $items['admin/commerce/stock_cero'] = array(
     'title' => 'Cero Stock',
     'description' => 'Configuración del modulo Cero Stock',
     'page callback' => 'drupal_get_form',
@@ -189,7 +189,7 @@ function stock_cero_form_validate($form, &$form_state){
   if (!is_numeric($max_num)){
     form_set_error('stock_cero_rango', t('Solo caracteres numericos entre 0 y 999'));
   }
-  elseif ($max_num <= 0){
+  elseif ($max_num < 0){
     form_set_error('stock_cero_rango', t('Solo carecteres numericos positivos'));
   }
 }
@@ -215,6 +215,15 @@ function stock_cero_permission() {
  * 
  */
 function _stock_cero_page() {
+
+  //Estilo de la pagina a renderizar
+  $page_array[] = array(
+    '#title' => t('Ultimas unidades'),
+    '#items' => $items,
+    '#theme' => 'item_list',
+    '#empty' =>t('No hay productos que coincidan con el criterio'),
+  );
+
   //Comprobamos los permisos
   if (user_access('access stock_cero content')) {
     // Usamos nuestra funcion para obtener datos.
@@ -225,18 +234,13 @@ function _stock_cero_page() {
     foreach ($result as $node) {
      //Creamos por cada elemento un enlace
       $items[] = array(
-        l($node->title, 'admin/commerce/products/' . $node->entity_id . '/edit'  ),
+        l($node->entity_id, 'admin/commerce/products/' . $node->entity_id . '/edit'  ),
         $node->commerce_stock_value
       );
     }
   }
   
-  $page_array[] = array(
-    '#title' => t('Ultimas unidades'),
-    '#items' => $items,
-    '#theme' => 'item_list',
-    '#empty' =>t('No hay productos que coincidan con el criterio'),
-  );
+  
 
   return $page_array;
 }
