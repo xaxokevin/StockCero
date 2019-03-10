@@ -106,7 +106,7 @@ function stock_cero_block_view($delta = '') {
         // Itera los resultados y los crea como links
         foreach ($result as $node) {
           $items[] = array(
-            'data' => l($node->title, 'admin/commerce/products/' . $node->entity_id . '/edit'),
+            'data' => l($node->bundle '../../products/' . $node->entity_id . '/edit'),
           ); 
         }
        // Se muestra si no hay contenido que mostrar
@@ -223,10 +223,9 @@ function _stock_cero_page() {
     $items = array();
     // Iteramos los resultados y creamos los links
     foreach ($result as $node) {
-      $product = commerce_product_load($node->entity_id);
      //Creamos por cada elemento un enlace
       $items[] = array(
-        l($product->title, '../../products/' . $node->entity_id . '/edit'  ),
+        l($node->title, '../../products/' . $node->entity_id . '/edit'  ),
         $node->commerce_stock_value
       );
     }
@@ -239,5 +238,5 @@ function _stock_cero_page() {
     '#empty' =>t('No hay productos que coincidan con el criterio'),
   );
 
-  return $output;
+  return $page_array;
 }
