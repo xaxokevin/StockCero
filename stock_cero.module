@@ -150,7 +150,7 @@ function stock_cero_form($form, &$form_state) {
   $form['stock_cero_rango'] = array(
     '#type' => 'textfield',
     '#title' => t('El numero maximo de stock'),
-    '#default_value' => variable_get('current_posts_max', 3),
+    '#default_value' => variable_get('stock_cero_rango', 3),
     '#size' => 3,
     '#maxlength' => 3,
     '#description' => t('El numero maximo de productos con "x" stock a mostrar'),
@@ -162,20 +162,31 @@ function stock_cero_form($form, &$form_state) {
 
 
 /**
- * Implements validation from the Form API.
+ * Implementa la validación del formulario desde Form API.
  * 
  * @param $form
- *   A structured array containing the elements and properties of the form.
+ *   Array que contiene la información del formulario.
  * @param $form_state
- *   An array that stores information about the form's current state 
- *   during processing.
+ *  Guarda el estado anterior durante el proceso de relleno del formulario.
  */
-function current_posts_form_validate($form, &$form_state){
+function stock_cero_form_validate($form, &$form_state){
   $max_num = $form_state['values']['current_posts_rango'];
   if (!is_numeric($max_num)){
-    form_set_error('current_posts_rango', t('Solo caracteres numericos entre 0 y 999'));
+    form_set_error('stock_cero_rango', t('Solo caracteres numericos entre 0 y 999'));
   }
   elseif ($max_num <= 0){
-    form_set_error('current_posts_rango', t('Solo carecteres numericos positivos'));
+    form_set_error('stock_cero_rango', t('Solo carecteres numericos positivos'));
   }
+}
+
+
+/**
+ * Implements hook_permission().
+ */
+function stock_cero_permission() {
+  return array(
+    'access stock_cero content' => array(
+      'title' => t('Access content for the Current posts module'),
+    )
+  );
 }
