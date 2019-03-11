@@ -105,8 +105,9 @@ function stock_cero_block_view($delta = '') {
         $items = array();
         // Itera los resultados y los crea como links
         foreach ($result as $node) {
+        $object = commerce_product_load($node->entity_id);
           $items[] = array(
-            'data' => l($node->entity_id, 'admin/commerce/products/' . $node->entity_id . '/edit'),
+            'data' => l($object->title . $object->type, 'admin/commerce/products/' . $node->entity_id . '/edit'),
           ); 
         }
        // Se muestra si no hay contenido que mostrar
@@ -216,13 +217,7 @@ function stock_cero_permission() {
  */
 function _stock_cero_page() {
 
-  //Estilo de la pagina a renderizar
-  $page_array[] = array(
-    '#title' => t('Ultimas unidades'),
-    '#items' => $items,
-    '#theme' => 'item_list',
-    '#empty' =>t('No hay productos que coincidan con el criterio'),
-  );
+  
 
   //Comprobamos los permisos
   if (user_access('access stock_cero content')) {
@@ -232,13 +227,23 @@ function _stock_cero_page() {
     $items = array();
     // Iteramos los resultados y creamos los links
     foreach ($result as $node) {
+      //enlazamos a la tabla product
+      $object = commerce_product_load($node->entity_id);
      //Creamos por cada elemento un enlace
       $items[] = array(
-        l($node->entity_id, 'admin/commerce/products/' . $node->entity_id . '/edit'  ),
-        $node->commerce_stock_value
+        l($object->title . $object->type, 'admin/commerce/products/' . $node->entity_id . '/edit'  ),
+        
       );
     }
   }
+
+  //Estilo de la pagina a renderizar
+  $page_array[] = array(
+    '#title' => t('Ultimas unidades'),
+    '#items' => $items,
+    '#theme' => 'item_list',
+    '#empty' =>t('No hay productos que coincidan con el criterio'),
+  );
   
   
 
